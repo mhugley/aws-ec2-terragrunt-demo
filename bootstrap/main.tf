@@ -15,12 +15,11 @@ provider "aws" {
   }
 }
 locals {
-  bucket     = "mhugley-ec2-demo-tfstate-283678155577-us-east-1"
-  account    = "283678155577"
-  region     = "us-east-1"
-  project    = "ec2-terragrunt-demo"
-  repository = "mhugley/aws-ec2-terragrunt-demo"
-  prefix     = "arn:aws:ec2:us-east-1:283678155577"
+  bucket              = "mhugley-ec2-demo-tfstate-283678155577-us-east-1"
+  region              = "us-east-1"
+  project             = "ec2-terragrunt-demo"
+  oidc_subject_prefix = "repo:mhugley@19837466/aws-ec2-terragrunt-demo@1432472170"
+  prefix              = "arn:aws:ec2:us-east-1:283678155577"
 }
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
@@ -83,7 +82,7 @@ resource "aws_iam_role" "github" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = each.key == "deploy" ? ["repo:${local.repository}:environment:dev"] : ["repo:${local.repository}:ref:refs/heads/main", "repo:${local.repository}:pull_request"]
+          "token.actions.githubusercontent.com:sub" = each.key == "deploy" ? ["${local.oidc_subject_prefix}:environment:dev"] : ["${local.oidc_subject_prefix}:ref:refs/heads/main", "${local.oidc_subject_prefix}:pull_request"]
         }
       }
     }]
@@ -118,7 +117,9 @@ resource "aws_iam_role_policy" "deploy" {
       Condition = { StringEquals = { "ec2:InstanceType" = "t4g.micro", "aws:RequestTag/Project" = local.project } } },
       { Sid = "DenyPublicAddress", Effect = "Deny", Action = ["ec2:RunInstances"], Resource = "*", Condition = { Bool = { "ec2:AssociatePublicIpAddress" = "true" } } },
       { Sid = "LaunchEncryptedVolume", Effect = "Allow", Action = ["ec2:RunInstances"], Resource = "${local.prefix}:volume/*", Condition = { Bool = { "ec2:Encrypted" = "true" } } },
-      { Sid = "CreateSecurityGroup", Effect = "Allow", Action = ["ec2:CreateSecurityGroup"], Resource = ["${local.prefix}:security-group/*", "${local.prefix}:vpc/vpc-0b57a3944dfc414b6"],
+      { Sid = "CreateSecurityGroupInExistingVpc", Effect = "Allow", Action = ["ec2:CreateSecurityGroup"], Resource = "${local.prefix}:vpc/vpc-0b57a3944dfc414b6",
+      Condition = { StringEquals = { "aws:RequestedRegion" = local.region } } },
+      { Sid = "CreateTaggedSecurityGroup", Effect = "Allow", Action = ["ec2:CreateSecurityGroup"], Resource = "${local.prefix}:security-group/*",
       Condition = { StringEquals = { "aws:RequestTag/Project" = local.project, "aws:RequestedRegion" = local.region } } },
       { Sid = "TagOnCreate", Effect = "Allow", Action = ["ec2:CreateTags"], Resource = ["${local.prefix}:instance/*", "${local.prefix}:volume/*", "${local.prefix}:security-group/*", "${local.prefix}:network-interface/*"], Condition = { StringEquals = { "ec2:CreateAction" = ["RunInstances", "CreateSecurityGroup"] } } },
       { Sid = "ManageProjectResources", Effect = "Allow", Action = ["ec2:TerminateInstances", "ec2:ModifyInstanceAttribute", "ec2:ModifyInstanceCreditSpecification", "ec2:DeleteSecurityGroup", "ec2:RevokeSecurityGroupEgress", "ec2:RevokeSecurityGroupIngress", "ec2:CreateTags", "ec2:DeleteTags"],

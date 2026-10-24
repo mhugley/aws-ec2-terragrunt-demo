@@ -30,6 +30,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
           aws-region: us-east-1
           allowed-account-ids: '283678155577'
+          retry-max-attempts: 3
           role-session-name: plan-${{ github.run_id }}
       - run: bash scripts/plan.sh
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
