@@ -39,7 +39,7 @@ jobs:
           path: plan.txt
           retention-days: 3
       - name: Update PR plan comment
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
