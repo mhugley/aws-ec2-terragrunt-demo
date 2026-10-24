@@ -21,11 +21,11 @@ jobs:
       TF_IN_AUTOMATION: 'true'
       TG_NON_INTERACTIVE: 'true'
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
           aws-region: us-east-1
@@ -43,7 +43,7 @@ jobs:
           [[ $status != 1 ]] || exit 1
           echo "changes=$status" >> "$GITHUB_OUTPUT"
       - name: Create or resolve drift issue
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           CHANGES: ${{ steps.detect.outputs.changes }}
         with:
