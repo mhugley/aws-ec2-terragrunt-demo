@@ -16,7 +16,6 @@ provider "aws" {
 }
 locals {
   bucket     = "mhugley-ec2-demo-tfstate-283678155577-us-east-1"
-  account    = "283678155577"
   region     = "us-east-1"
   project    = "ec2-terragrunt-demo"
   repository = "mhugley/aws-ec2-terragrunt-demo"
