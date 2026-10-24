@@ -15,11 +15,11 @@ provider "aws" {
   }
 }
 locals {
-  bucket     = "mhugley-ec2-demo-tfstate-283678155577-us-east-1"
-  region     = "us-east-1"
-  project    = "ec2-terragrunt-demo"
-  repository = "mhugley/aws-ec2-terragrunt-demo"
-  prefix     = "arn:aws:ec2:us-east-1:283678155577"
+  bucket              = "mhugley-ec2-demo-tfstate-283678155577-us-east-1"
+  region              = "us-east-1"
+  project             = "ec2-terragrunt-demo"
+  oidc_subject_prefix = "repo:mhugley@19837466/aws-ec2-terragrunt-demo@1432472170"
+  prefix              = "arn:aws:ec2:us-east-1:283678155577"
 }
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
@@ -82,7 +82,7 @@ resource "aws_iam_role" "github" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = each.key == "deploy" ? ["repo:${local.repository}:environment:dev"] : ["repo:${local.repository}:ref:refs/heads/main", "repo:${local.repository}:pull_request"]
+          "token.actions.githubusercontent.com:sub" = each.key == "deploy" ? ["${local.oidc_subject_prefix}:environment:dev"] : ["${local.oidc_subject_prefix}:ref:refs/heads/main", "${local.oidc_subject_prefix}:pull_request"]
         }
       }
     }]

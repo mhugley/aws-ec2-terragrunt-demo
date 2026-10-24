@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mhugley/aws-ec2-terragrunt-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/mhugley/aws-ec2-terragrunt-demo/actions/workflows/ci.yml)
 
-One Amazon Linux 2023 ARM64 **t4g.micro** in the existing `personal-dev-vpc`, `us-east-1`. Terraform owns only the instance and its dedicated security group. Terragrunt supplies environment inputs and encrypted, versioned S3 state with native locking. Bootstrap provisions the state bucket and two narrowly scoped GitHub OIDC roles; the existing OIDC provider is reused.
+One Amazon Linux 2023 ARM64 **t4g.micro** in the existing `personal-dev-vpc`, `us-east-1`. Terraform owns only the instance and its dedicated security group. Terragrunt supplies environment inputs and encrypted, versioned S3 state with native locking. Bootstrap provisions the state bucket and two narrowly scoped GitHub OIDC roles; the existing OIDC provider is reused. Trust policies use the repository’s immutable OIDC subject prefix (owner/repository IDs), confirmed through the GitHub API.
 
 ## Cost and connectivity
 
