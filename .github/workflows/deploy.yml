@@ -1,9 +1,9 @@
-name: Deploy EC2
+name: Deploy infrastructure
 on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Plan, apply, or destroy the demo EC2 stack
+        description: Plan, apply, or destroy the demo EC2 and S3 stack
         type: choice
         options: [plan, apply, destroy]
         default: plan
@@ -70,7 +70,7 @@ jobs:
         if: inputs.operation != 'plan'
         working-directory: live/dev/ec2
         run: terragrunt apply -input=false -no-color -lock-timeout=5m tfplan
-      - name: Verify EC2 health and security configuration
+      - name: Verify EC2 and S3 configuration
         if: inputs.operation == 'apply'
         run: bash scripts/smoke.sh
       - name: Verify destroy
@@ -78,11 +78,11 @@ jobs:
         working-directory: live/dev/ec2
         run: |
           terragrunt state list > "$RUNNER_TEMP/state.txt"
-          if grep -Eq '^aws_(instance|security_group)\.' "$RUNNER_TEMP/state.txt"; then
+          if grep -Eq '^(module\.data_bucket\.|aws_(instance|security_group)\.)' "$RUNNER_TEMP/state.txt"; then
             echo 'Managed resources remain after destroy' >&2
             exit 1
           fi
-          echo 'Demo instance and security group destroyed. Existing network and bootstrap retained.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Demo EC2 and S3 resources destroyed. Existing network and bootstrap retained.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

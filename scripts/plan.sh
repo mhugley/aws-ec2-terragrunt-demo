@@ -17,6 +17,6 @@ if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     echo '```text'
     tail -c 40000 "$root/plan.txt"
     echo '```'
-    echo 'Cost estimate: **~$6.77/month** for continuous operation (EC2 + 8 GiB gp3). No NAT or public IPv4.'
+    echo 'Cost estimate: **~$6.77/month** for continuous operation (EC2 + 8 GiB gp3). S3 storage and requests are usage-based. No NAT or public IPv4.'
   } >> "$GITHUB_STEP_SUMMARY"
 fi

@@ -45,7 +45,7 @@ jobs:
           script: |
             const fs = require('fs');
             const marker = '<!-- terraform-plan -->';
-            const body = marker + '\n### Terraform plan\n```text\n' + fs.readFileSync('plan.txt', 'utf8').slice(-50000) + '\n```\nEstimated EC2 + disk cost: ~$6.77/month. The deployment workflow creates a fresh plan on main.';
+            const body = marker + '\n### Terraform plan\n```text\n' + fs.readFileSync('plan.txt', 'utf8').slice(-50000) + '\n```\nEstimated EC2 + disk cost: ~$6.77/month, plus usage-based S3 storage/requests. The deployment workflow creates a fresh plan on main.';
             const params = {owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number};
             const comments = await github.paginate(github.rest.issues.listComments, params);
             const existing = comments.find(c => c.user.type === 'Bot' && c.body.startsWith(marker));

@@ -7,3 +7,5 @@ Only main may deploy through the dev environment. Same-repository PRs can receiv
 The EC2 instance has no public IP, no SSH key, no instance role, no ingress/egress rules, IMDSv2, and encrypted root storage. Existing networking is read only. Network reachability/SSM is intentionally unavailable in the current subnet. Pin upgrades and review dependency PRs before merging.
 
 For a security issue, contact the repository owner privately. Do not disclose credentials in issues.
+
+The data bucket blocks public access and ACLs, uses SSE-S3, versioning, and a deny-HTTP policy. Workflow S3 permissions reference only its exact ARN, without direct object permissions. Nonempty bucket deletion is deliberately blocked by force_destroy=false. Bootstrap IAM remains administrator-managed.

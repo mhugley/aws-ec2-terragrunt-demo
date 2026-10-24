@@ -23,7 +23,7 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terragrunt hcl fmt --check
       - run: |
-          for dir in modules/ec2 bootstrap; do
+          for dir in modules/ec2 modules/s3 bootstrap; do
             terraform -chdir="$dir" init -backend=false -input=false -lockfile=readonly
             terraform -chdir="$dir" validate
           done
@@ -33,6 +33,7 @@ jobs:
       - run: |
           tflint --init
           tflint --chdir=modules/ec2 --config="$(pwd)/.tflint.hcl"
+          tflint --chdir=modules/s3 --config="$(pwd)/.tflint.hcl"
           tflint --chdir=bootstrap --config="$(pwd)/.tflint.hcl"
       - name: Workflow lint
         shell: bash
@@ -54,7 +55,7 @@ jobs:
       - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: config
-          scan-ref: modules/ec2
+          scan-ref: modules
           severity: HIGH,CRITICAL
           exit-code: '1'
           hide-progress: true
