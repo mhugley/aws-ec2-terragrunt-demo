@@ -1,0 +1,17 @@
+name: Setup infrastructure tools
+description: Install pinned Terraform and checksum-verified Terragrunt
+runs:
+  using: composite
+  steps:
+    - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+        terraform_version: 1.15.4
+        terraform_wrapper: false
+    - shell: bash
+      run: |
+        set -euo pipefail
+        target="$RUNNER_TEMP/terragrunt"
+        curl --fail --silent --show-error --location --retry 3           https://github.com/gruntwork-io/terragrunt/releases/download/v1.2.1/terragrunt_linux_amd64 -o "$target"
+        echo "f2f6238ad2348855a4e876b90fd31f3f5d106bb234794202a00b2bcc139fa753  $target" | sha256sum --check
+        chmod +x "$target"
+        echo "$RUNNER_TEMP" >> "$GITHUB_PATH"

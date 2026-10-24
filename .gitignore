@@ -1,0 +1,14 @@
+**/.terraform/*
+**/.terragrunt-cache/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+plan.json
+plan.txt
+outputs.json
+crash.log
+*.auto.tfvars
+.env
+.DS_Store
+__pycache__/
+*.pyc

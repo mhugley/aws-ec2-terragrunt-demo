@@ -1,0 +1,91 @@
+name: Deploy EC2
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Plan, apply, or destroy the demo EC2 stack
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+      confirmation:
+        description: For destroy, type destroy-ec2-demo
+        type: string
+        default: ''
+permissions:
+  contents: read
+concurrency:
+  group: terraform-state-dev
+  cancel-in-progress: false
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: checks
+    if: github.ref == 'refs/heads/main'
+    environment: dev
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+      TF_IN_AUTOMATION: 'true'
+      TG_NON_INTERACTIVE: 'true'
+      OPERATION: ${{ inputs.operation }}
+      CONFIRMATION: ${{ inputs.confirmation }}
+    steps:
+      - name: Validate operation
+        run: |
+          case "$OPERATION" in
+            plan|apply) ;;
+            destroy) [[ "$CONFIRMATION" == destroy-ec2-demo ]] || { echo 'Destroy confirmation did not match'; exit 1; } ;;
+            *) exit 1 ;;
+          esac
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+          allowed-account-ids: '283678155577'
+          role-session-name: deploy-${{ github.run_id }}
+      - name: Validate configuration
+        run: |
+          terraform fmt -check -recursive
+          terragrunt hcl fmt --check
+          python3 -m unittest discover -s tests -v
+          cd live/dev/ec2
+          terragrunt init -input=false -lockfile=readonly
+          terragrunt validate
+      - name: Create and check fresh plan
+        run: |
+          mode=apply
+          [[ "$OPERATION" != destroy ]] || mode=destroy
+          bash scripts/plan.sh "$mode"
+      - name: Apply the exact plan from this job
+        if: inputs.operation != 'plan'
+        working-directory: live/dev/ec2
+        run: terragrunt apply -input=false -no-color -lock-timeout=5m tfplan
+      - name: Verify EC2 health and security configuration
+        if: inputs.operation == 'apply'
+        run: bash scripts/smoke.sh
+      - name: Verify destroy
+        if: inputs.operation == 'destroy'
+        working-directory: live/dev/ec2
+        run: |
+          terragrunt state list > "$RUNNER_TEMP/state.txt"
+          if grep -Eq '^aws_(instance|security_group)\.' "$RUNNER_TEMP/state.txt"; then
+            echo 'Managed resources remain after destroy' >&2
+            exit 1
+          fi
+          echo 'Demo instance and security group destroyed. Existing network and bootstrap retained.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: deployment-plan-${{ github.run_id }}
+          path: plan.txt
+          if-no-files-found: ignore
+          retention-days: 3

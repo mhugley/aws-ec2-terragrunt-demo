@@ -1,0 +1,17 @@
+name: Infrastructure issue
+description: Report a deployment, drift, or workflow problem
+title: '[infra] '
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Link the failing workflow and redact credentials from logs.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
