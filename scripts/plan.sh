@@ -4,10 +4,10 @@ mode="${1:-apply}"
 [[ "$mode" == apply || "$mode" == destroy ]] || { echo 'Expected apply or destroy' >&2; exit 1; }
 root="$(git rev-parse --show-toplevel)"
 cd "$root/live/dev/ec2"
-args=()
-[[ "$mode" != destroy ]] || args+=(-destroy)
+set --
+[[ "$mode" != destroy ]] || set -- -destroy
 terragrunt init -input=false -lockfile=readonly
-terragrunt plan -input=false -no-color -lock-timeout=5m "${args[@]}" -out=tfplan > "$root/plan.txt"
+terragrunt plan -input=false -no-color -lock-timeout=5m "$@" -out=tfplan > "$root/plan.txt"
 terragrunt show -json tfplan > "$root/plan.json"
 python3 "$root/scripts/check_plan.py" "$root/plan.json" "$mode"
 cat "$root/plan.txt"
