@@ -16,6 +16,9 @@ resource "aws_s3_bucket_ownership_controls" "data" {
     object_ownership = "BucketOwnerEnforced"
   }
 }
+# This low-cost demo uses AWS-managed SSE-S3 (AES256), not a paid customer-managed KMS key.
+# Encryption is enforced by plan guardrails; only the CMK preference check is excepted here.
+#trivy:ignore:AVD-AWS-0132
 resource "aws_s3_bucket_server_side_encryption_configuration" "data" {
   bucket = aws_s3_bucket.data.id
   rule {

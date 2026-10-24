@@ -9,3 +9,5 @@ The EC2 instance has no public IP, no SSH key, no instance role, no ingress/egre
 For a security issue, contact the repository owner privately. Do not disclose credentials in issues.
 
 The data bucket blocks public access and ACLs, uses SSE-S3, versioning, and a deny-HTTP policy. Workflow S3 permissions reference only its exact ARN, without direct object permissions. Nonempty bucket deletion is deliberately blocked by force_destroy=false. Bootstrap IAM remains administrator-managed.
+
+Trivy rule AVD-AWS-0132 (customer-managed KMS key preference) has a resource-local exception for the data bucket encryption resource. SSE-S3 AES256 remains enabled and enforced by plan guardrails. This low-cost learning bucket does not require an independently managed KMS key. All other HIGH/CRITICAL checks remain blocking.
