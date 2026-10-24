@@ -51,6 +51,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
           allowed-account-ids: '283678155577'
+          retry-max-attempts: 3
           role-session-name: deploy-${{ github.run_id }}
       - name: Validate configuration
         run: |

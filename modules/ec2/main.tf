@@ -54,12 +54,12 @@ resource "aws_instance" "demo" {
     volume_type           = "gp3"
     volume_size           = 8
     delete_on_termination = true
-    tags = {
-      Name        = "ec2-terragrunt-demo-root"
-      Project     = "ec2-terragrunt-demo"
-      Environment = "dev"
-      ManagedBy   = "Terraform"
-    }
+  }
+  volume_tags = {
+    Name        = "ec2-terragrunt-demo-root"
+    Project     = "ec2-terragrunt-demo"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
   }
   tags = { Name = "ec2-terragrunt-demo" }
   lifecycle {

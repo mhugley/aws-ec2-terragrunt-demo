@@ -30,6 +30,7 @@ jobs:
           role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
           aws-region: us-east-1
           allowed-account-ids: '283678155577'
+          retry-max-attempts: 3
       - name: Detect drift without changing infrastructure
         id: detect
         working-directory: live/dev/ec2
