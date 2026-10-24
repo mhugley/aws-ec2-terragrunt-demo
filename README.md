@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mhugley/aws-ec2-terragrunt-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/mhugley/aws-ec2-terragrunt-demo/actions/workflows/ci.yml)
 
-One Amazon Linux 2023 ARM64 **t4g.micro** in the existing `personal-dev-vpc`, `us-east-1`. Terraform owns only the instance and its dedicated security group. Terragrunt supplies environment inputs and encrypted, versioned S3 state with native locking. Bootstrap provisions the state bucket and two narrowly scoped GitHub OIDC roles; the existing OIDC provider is reused.
+One Amazon Linux 2023 ARM64 **t4g.micro** in the existing `personal-dev-vpc`, `us-east-1`. Terraform owns only the instance and its dedicated security group. Terragrunt supplies environment inputs and encrypted, versioned S3 state with native locking. Bootstrap provisions the state bucket and two narrowly scoped GitHub OIDC roles; the existing OIDC provider is reused. Trust policies use the repository’s immutable OIDC subject prefix (owner/repository IDs), confirmed through the GitHub API.
 
 ## Cost and connectivity
 
@@ -13,6 +13,7 @@ The existing subnet has only a local route and no SSM endpoints. The instance th
 ## Workflows
 
 - **CI**: Terraform/Terragrunt formatting, locked provider initialization, Terraform validation, TFLint, actionlint, plan-policy tests, and Trivy IaC scanning. No AWS credentials required.
+- **CodeQL**: scans GitHub Actions and Python scripts on PRs, pushes, and weekly, publishing findings to GitHub code scanning.
 - **Terraform plan**: same-repository PR plans with a read-only OIDC role, a refreshed PR comment, short-lived text-plan artifact, and cost/security guardrails. Fork PRs cannot obtain AWS credentials.
 - **Deploy EC2**: manually select `plan`, `apply`, or `destroy` on `main`. Apply executes the exact fresh plan produced and checked in the same job. EC2 health and actual AWS configuration are verified after apply. Destroy requires `confirmation=destroy-ec2-demo` and verifies the state is empty of managed demo resources.
 - **Drift detection**: weekly Monday 13:23 UTC and manual runs. Opens one drift issue, closes it on recovery, and never auto-applies.
